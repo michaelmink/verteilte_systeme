@@ -1,0 +1,35 @@
+x-node: &node
+  build: .
+  image: replication-node
+
+services:
+  leader:
+    <<: *node
+    environment:
+      ROLE: leader
+      NODE_NAME: leader
+    ports: ["8000:8000"]
+
+  follower1:
+    <<: *node
+    environment:
+      ROLE: follower
+      NODE_NAME: follower1
+      LEADER_URL: http://leader:8000
+      REPLICATION_LAG: "0.5"
+    ports: ["8001:8000"]
+
+  follower2:
+    <<: *node
+    environment:
+      ROLE: follower
+      NODE_NAME: follower2
+      LEADER_URL: http://leader:8000
+      REPLICATION_LAG: "3"
+    ports: ["8002:8000"]
+
+  client:
+    <<: *node
+    profiles: ["client"]
+    entrypoint: ["python", "client.py"]
+    depends_on: [leader, follower1, follower2]

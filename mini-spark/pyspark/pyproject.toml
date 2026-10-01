@@ -1,0 +1,19 @@
+[project]
+name = "pyspark"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "micmink", email = "michael.mink@mercedes-benz.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "py4j"
+]
+
+[project.scripts]
+pyspark = "pyspark:main"
+
+[build-system]
+requires = ["uv_build>=0.12.7,<0.13.0"]
+build-backend = "uv_build"

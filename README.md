@@ -7,5 +7,5 @@
 * lokaler Mail Server
 
 * Verteilte Algorithmen ??!!!!
-* memcached
+* memcached (https://github.com/memcached/memcached)
 * https://www.squid-cache.org/, https://trafficserver.apache.org/
