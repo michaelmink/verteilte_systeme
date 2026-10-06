@@ -1,0 +1,6 @@
+table Message {
+    cmd: ubyte;
+    text: string;
+}
+
+root_type Message;

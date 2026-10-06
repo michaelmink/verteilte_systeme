@@ -1,0 +1,11 @@
+# Kompilierte Programme
+client
+server
+
+# Generierter Code (siehe README)
+*.pb-c.c
+*.pb-c.h
+flatbuffers/format_*.h
+flatbuffers/flatbuffers_common_*.h
+
+flatbuffers/flatcc/

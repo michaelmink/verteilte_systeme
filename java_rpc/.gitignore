@@ -1,0 +1,5 @@
+*.class
+*.jar
+!gradle-wrapper.jar
+out/
+java_grpc/protoc-gen-grpc-java
