@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  # Station 1: Klassisches RDBMS
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+
+  # Station 2: NoSQL / BASE
+  mongodb:
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+
+  # Station 3: NewSQL (Single-Node mit vollem Raft/SQL-Feature-Set)
+  cockroachdb:
+    image: cockroachdb/cockroach:v23.1.0
+    command: start-single-node --insecure
+    ports:
+      - "26257:26257"
+      - "8080:8080"

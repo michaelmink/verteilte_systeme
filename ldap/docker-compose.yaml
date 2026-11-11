@@ -1,0 +1,101 @@
+services:
+  openldap:
+    image: osixia/openldap:latest
+    container_name: ldap-server
+    ports:
+      - "389:389"
+    environment:
+      - LDAP_ORGANISATION=MeinTestLab
+      - LDAP_DOMAIN=testlab.local
+      - LDAP_ADMIN_PASSWORD=adminpass
+      - LDAP_TLS=false
+    volumes:
+      - ldap_data:/var/lib/ldap
+      - ldap_config:/etc/ldap/slapd.d
+
+  # Das modernere UI als Ersatz für phpldapadmin
+  ldap-account-manager:
+    image: ldapaccountmanager/lam:stable
+    container_name: ldap-lam-ui
+    ports:
+      - "8080:80"
+    environment:
+      - LAM_SKIP_NETWORK_TEST=true
+      - LDAP_SERVER=ldap://openldap:389
+      - LDAP_DOMAIN=testlab.local
+      - LDAP_BASE_DN=dc=testlab,dc=local
+      - ADMIN_USER=cn=admin,dc=testlab,dc=local
+      - LAM_PASSWORD=lam
+    depends_on:
+      - openldap
+
+  webserver:
+    image: httpd:2.4
+    container_name: ldap-test-web
+    ports:
+      - "8081:80"
+    volumes:
+      - ./ldap-auth.conf:/usr/local/apache2/conf/extra/ldap-auth.conf:ro
+    command: >
+      sh -c "grep -q ldap-auth.conf conf/httpd.conf || echo 'Include conf/extra/ldap-auth.conf' >> conf/httpd.conf;
+      exec httpd-foreground"
+    depends_on:
+      - openldap
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: keycloak
+    command: start-dev --import-realm
+    ports:
+      - "8082:8080"
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+      # Browser sieht localhost:8082, Container sprechen intern keycloak:8080
+      - KC_HOSTNAME=http://localhost:8082
+      - KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true
+    volumes:
+      - ./keycloak/realm-testlab.json:/opt/keycloak/data/import/realm-testlab.json:ro
+    depends_on:
+      - openldap
+
+  whoami:
+    image: traefik/whoami
+    container_name: whoami
+
+  oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:latest
+    container_name: oauth2-proxy
+    restart: on-failure
+    ports:
+      - "4180:4180"
+    command:
+      - --http-address=0.0.0.0:4180
+      - --upstream=http://whoami:80
+      - --provider=oidc
+      - --client-id=oauth2-proxy
+      - --client-secret=oauth2-proxy-secret
+      - --redirect-url=http://localhost:4180/oauth2/callback
+      - --oidc-issuer-url=http://localhost:8082/realms/testlab
+      - --skip-oidc-discovery=true
+      - --login-url=http://localhost:8082/realms/testlab/protocol/openid-connect/auth
+      - --redeem-url=http://keycloak:8080/realms/testlab/protocol/openid-connect/token
+      - --oidc-jwks-url=http://keycloak:8080/realms/testlab/protocol/openid-connect/certs
+      - --scope=openid profile
+      - --oidc-email-claim=preferred_username
+      - --oidc-groups-claim=groups
+      - --insecure-oidc-allow-unverified-email=true
+      - --email-domain=*
+      - --cookie-secret=0123456789abcdef0123456789abcdef
+      - --cookie-secure=false
+      - --skip-provider-button=true
+      - --pass-user-headers=true
+      - --set-xauthrequest=true
+      - --code-challenge-method=S256
+    depends_on:
+      - keycloak
+      - whoami
+
+volumes:
+  ldap_data:
+  ldap_config:

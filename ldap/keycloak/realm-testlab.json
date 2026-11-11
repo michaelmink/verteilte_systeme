@@ -1,0 +1,124 @@
+{
+  "realm": "testlab",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "oauth2-proxy",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "oauth2-proxy-secret",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": ["http://localhost:4180/oauth2/callback"],
+      "webOrigins": ["http://localhost:4180"],
+      "protocolMappers": [
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "config": {
+            "claim.name": "groups",
+            "full.path": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "components": {
+    "org.keycloak.storage.UserStorageProvider": [
+      {
+        "name": "openldap",
+        "providerId": "ldap",
+        "config": {
+          "enabled": ["true"],
+          "priority": ["0"],
+          "vendor": ["other"],
+          "connectionUrl": ["ldap://openldap:389"],
+          "authType": ["simple"],
+          "bindDn": ["cn=admin,dc=testlab,dc=local"],
+          "bindCredential": ["adminpass"],
+          "usersDn": ["dc=testlab,dc=local"],
+          "searchScope": ["2"],
+          "userObjectClasses": ["posixAccount"],
+          "usernameLDAPAttribute": ["uid"],
+          "rdnLDAPAttribute": ["cn"],
+          "uuidLDAPAttribute": ["entryUUID"],
+          "editMode": ["READ_ONLY"],
+          "importEnabled": ["true"],
+          "syncRegistrations": ["false"],
+          "pagination": ["false"],
+          "trustEmail": ["true"]
+        },
+        "subComponents": {
+          "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": [
+            {
+              "name": "username",
+              "providerId": "user-attribute-ldap-mapper",
+              "config": {
+                "ldap.attribute": ["uid"],
+                "user.model.attribute": ["username"],
+                "read.only": ["true"],
+                "always.read.value.from.ldap": ["false"],
+                "is.mandatory.in.ldap": ["true"]
+              }
+            },
+            {
+              "name": "first name",
+              "providerId": "user-attribute-ldap-mapper",
+              "config": {
+                "ldap.attribute": ["givenName"],
+                "user.model.attribute": ["firstName"],
+                "read.only": ["true"],
+                "always.read.value.from.ldap": ["true"],
+                "is.mandatory.in.ldap": ["false"]
+              }
+            },
+            {
+              "name": "last name",
+              "providerId": "user-attribute-ldap-mapper",
+              "config": {
+                "ldap.attribute": ["sn"],
+                "user.model.attribute": ["lastName"],
+                "read.only": ["true"],
+                "always.read.value.from.ldap": ["true"],
+                "is.mandatory.in.ldap": ["true"]
+              }
+            },
+            {
+              "name": "email",
+              "providerId": "user-attribute-ldap-mapper",
+              "config": {
+                "ldap.attribute": ["mail"],
+                "user.model.attribute": ["email"],
+                "read.only": ["true"],
+                "always.read.value.from.ldap": ["false"],
+                "is.mandatory.in.ldap": ["false"]
+              }
+            },
+            {
+              "name": "groups",
+              "providerId": "group-ldap-mapper",
+              "config": {
+                "groups.dn": ["dc=testlab,dc=local"],
+                "group.name.ldap.attribute": ["cn"],
+                "group.object.classes": ["posixGroup"],
+                "membership.ldap.attribute": ["memberUid"],
+                "membership.attribute.type": ["UID"],
+                "membership.user.ldap.attribute": ["uid"],
+                "preserve.group.inheritance": ["false"],
+                "mode": ["READ_ONLY"],
+                "user.roles.retrieve.strategy": ["LOAD_GROUPS_BY_MEMBER_ATTRIBUTE"],
+                "drop.non.existing.groups.during.sync": ["false"],
+                "ignore.missing.groups": ["false"]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
