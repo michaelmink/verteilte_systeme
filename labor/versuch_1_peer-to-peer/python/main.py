@@ -11,77 +11,152 @@ import termios
 # Parameter
 ip_dest = "127.0.0.1" # lo ip adresses of recipient
 port_dest = 5000
-
 port_recv = 5000
 
-# message definition
-msg = {
+# start positions
+start_pos = [(4,3),(4,4),(5,3),(5,4)]
+
+# connected peers
+con_peers = []
+
+# message types
+#enum MSG_TYPES:
+#    MOVE
+#    REGISTER
+
+MAX_LEN = 3
+
+# message definition (incl. default values)
+msg_move = {
+    "msg_type": "MOVE",
     "msg_id": 1,
-    "name": None,
+    "nickname": None,
     "m": 16,
-    "occupied": [(3,3),(3,2)],
+    "occupied": [],
     "max_len": 3,
     "direction": "up",
-    "t": 0,
+    "clock": 0,
     "collision": False,
     "color": "red",
 }
 
-def register(name: str) -> dict:
-    msg_reg = msg.copy()
-    msg_reg["name"] = name
-    return msg_reg
+msg_register_req = {
+    "msg_type": "REGISTER",
+    "nickname": None,
+    "farbe": None,
+    "ip": None,
+    "port": None,
+}
 
-# function to send next action
-async def send_action(msg, sock):
+msg_register_ack = {
+    "msg_type": "REGISTER_ACK",
+    "my_nickname": None,
+    "your_nickname": None,
+    "ack": False
+}
+
+
+def register(my_state) -> bool:
+    """
+    register
+    """
+    fd = sys.stdin.fileno()
+    for i in ["nickname", "farbe", "port"]:
+        print(f"enter {i}: ")
+        input = os.read(fd, 100).decode(errors="ignore")
+        msg_move[i] = input
+
+    return msg_move
+
+async def update_and_send_state(my_state, sock):
+    """
+    function to send next action
+    """
     loop = asyncio.get_running_loop()
+    address = (ip_dest, port_dest)
     while True:
-        await asyncio.sleep(0.2)
+        await asyncio.sleep(1)
+        # increment clock
+        my_state["clock"] += 1
+        # update positions
+        if len(my_state["occupied"]) == 0:
+            my_state["occupied"].append((3,3))
+            continue
 
-        data = json.dumps(msg).encode("utf-8") # sendto erwartet bytes
-        address = (ip_dest, port_dest)
+        # update pos
+        if my_state["direction"] == "right":
+            my_state["occupied"].append((my_state["occupied"][-1][0]+1, my_state["occupied"][-1][1]))
+        elif my_state["direction"] == "left":
+            my_state["occupied"].append((my_state["occupied"][-1][0]-1, my_state["occupied"][-1][1]))
+        elif my_state["direction"] == "up":
+            my_state["occupied"].append((my_state["occupied"][-1][0], my_state["occupied"][-1][1]+1))
+        elif my_state["direction"] == "down":
+            my_state["occupied"].append((my_state["occupied"][-1][0], my_state["occupied"][-1][1]-1))
+
+        # check len
+        if len(my_state["occupied"]) > MAX_LEN:
+            my_state["occupied"] = my_state["occupied"][-MAX_LEN::]
+
+
+        data = json.dumps(my_state).encode("utf-8") # sendto erwartet bytes
         await loop.sock_sendto(sock, data, address)
  
-# function to receive from other peers
 async def on_key(msg):
-    
+    """
+    function to receive from other peers
+    """
     def update_msg():
-        user_input = os.read(fd, 100)
+        user_input = os.read(fd, 10).decode(errors="ignore")
         # input validation
-        # TODO
-        msg["direction"] = user_input.decode(errors="ignore")
+        if user_input == "\x1b[A": user_input = "up"
+        elif user_input == "\x1b[B": user_input = "down"
+        elif user_input == "\x1b[D": user_input = "left"
+        elif user_input == "\x1b[C": user_input = "right"
+        else: user_input = msg["direction"]
+
+        msg["direction"] = user_input
 
     loop = asyncio.get_running_loop()
     fd = sys.stdin.fileno()
     loop.add_reader(fd, update_msg)
 
-async def game_tick(sock, global_state):
+async def game_tick(sock, my_state):
+    """
+    game tick
+    """
     loop = asyncio.get_running_loop()
-    while(True):    
+    while(True):
         # recvfrom
-        print("waiting for receive")
         msg, addr = await loop.sock_recvfrom(sock, 1000)
         peer_msg = json.loads(msg.decode("utf-8"))
 
+        # read msg type and decide what to do
+        msg_type = peer_msg["msg_type"]
+        if msg_type == "REGISTER":
+            pass
+        elif msg_type == "MOVE":
+            pass
+
         # merge single states into a global joint state
-        # TODO
-        name = peer_msg["name"]
-        global_state[name] = peer_msg
+        name = peer_msg["nickname"]
+        col = peer_msg["color"]
+        occ = peer_msg["occupied"]
+
+        # visualize snake (i.e. occupied, color, direction)
 
         print(peer_msg)   
 
 
+
+
 async def main():
 
-    # Register
-    print("Enter name to register and start: ")
-    name = "michi"
+    # init state
+    my_state = msg_move.copy()
 
     # Start
-    print(f"Welcome {name} to the Snake Game...")
-    init_msg = register(name)
-
-    print(init_msg)
+    print(f"Welcome to the Snake Game...")
+    my_state = register(my_state)
 
     # create udp socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -95,15 +170,12 @@ async def main():
     fd = sys.stdin.fileno()
     settings = tty.setcbreak(fd)
 
-    # init global state
-    global_state = {}
-
     # asyncronous loop to receive messages and send messages
     try:
         await asyncio.gather(
-            on_key(init_msg), 
-            send_action(init_msg, sock),
-            game_tick(sock, global_state),
+            on_key(my_state), 
+            update_and_send_state(my_state, sock),
+            game_tick(sock, my_state),
         )
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, settings)
