@@ -1,0 +1,13 @@
+[project]
+name = "python_snake"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "micmink", email = "michael.mink@mercedes-benz.com" }
+]
+requires-python = ">=3.14"
+dependencies = []
+
+[tool.uv]
+package = false
