@@ -34,4 +34,4 @@ async def send_join(sock, players, friend, CLOCK):
         print(f"Join abgelehnt: {answer['reason']}")
         return
     
-    handle_join_ack(addr, answer, players)
+    handle_join_ack(addr, answer, players, CLOCK)

@@ -9,14 +9,17 @@ import termios
 import time
 
 from src.register import register
-from src.msg_templates import move_msg, join_msg, join_reject_msg, join_ack_msg, player_entry
-from src.msg_handles import handle_join, handle_join_ack, handle_join_reject
+from src.msg_templates import move_msg, join_msg, join_reject_msg, join_ack_msg, player_entry, announce_msg, eliminated_msg
+from src.msg_handles import handle_join, handle_join_ack, handle_join_reject, handle_announce, handle_move, handle_eliminated
 from src.send_join import send_join
+from src.viz import viz
 
 
 GRID_SIZE = 16
 MAX_LEN = 3
 CLOCK = 0 # Lamport Clock
+MAX_TIME = 3 # max allowed time of inactivity
+TIMESTAMP_LAST_KEY_PRESS = None
 
 PEERS = [
     ("127.0.0.1", 5000),
@@ -47,6 +50,21 @@ async def on_key(sock):
         # clock
         global CLOCK
         CLOCK += 1
+
+        global TIMESTAMP_LAST_KEY_PRESS
+        if TIMESTAMP_LAST_KEY_PRESS and (time.time()-TIMESTAMP_LAST_KEY_PRESS > MAX_TIME):
+            # max time exceeded - game over
+            elim = eliminated_msg(CLOCK, f"MAX_TIME {MAX_TIME} exceeded.", players["me"]["move_no"])
+            elim = json.dumps(elim).encode("utf-8")
+            for player in players:
+                if player != "me":
+                    print(f"ELIMINATE sent to {players[player]["ip"]}_{players[player]["port"]}")
+                    sock.sendto(elim, (players[player]["ip"], players[player]["port"]))
+            # game over
+            return
+
+        TIMESTAMP_LAST_KEY_PRESS = time.time()
+        
         # direction
         direction = user_input
         # move_no
@@ -88,6 +106,8 @@ async def on_key(sock):
                 continue
             sock.sendto(move, peer)
 
+    # local time
+    local_time = time.time()
     loop = asyncio.get_running_loop()
     fd = sys.stdin.fileno()
     loop.add_reader(fd, update_and_send_move_msg)
@@ -115,12 +135,19 @@ async def receiver_loop(sock):
         msg_type = peer_msg["type"]
         if msg_type == "JOIN":
             handle_join(sock, addr, peer_msg, players, CLOCK)
-        elif msg_type == "JOIN_ACK":
-            handle_join_ack(addr, peer_msg, players)
-        elif msg_type == "JOIN_REJECT":
-            handle_join_reject(addr, peer_msg)
+        elif msg_type == "ANNOUNCE":
+            handle_announce(addr, peer_msg, players, CLOCK)
+        elif msg_type == "MOVE":
+            handle_move(addr, peer_msg, players, CLOCK)
+        elif msg_type == "ELIMINATED":
+            handle_eliminated(addr, peer_msg, players, CLOCK)
         else:
             print(f"Message tpye {msg_type} unknown.")
+
+        # update viz
+        viz(players)
+
+
 
 
 async def main():
@@ -149,19 +176,20 @@ async def main():
 
     if friend:
         await send_join(sock, players, friend, CLOCK)
-        
 
     # 3. Startposition wählen
     get_start_position(players)
-    print(players)
-    print(players.keys())
 
     # 4. send ANNOUNCE
+    announce = announce_msg(CLOCK, players["me"]["nickname"], players["me"]["color"], players["me"]["trail"])
+    announce = json.dumps(announce).encode("utf-8")
 
+    for player in players:
+        if player != "me":
+            print(f"ANNOUNCE sent to {players[player]["ip"]}_{players[player]["port"]}")
+            sock.sendto(announce, (players[player]["ip"], players[player]["port"]))
 
-    # 4. Jetzt erst Tasten annehmen
-    
-    
+    # 4. Jetzt erst Tasten annehmen  
     # allow for continous inputs with pressing Enter all the time
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)   # alte Einstellungen sichern
