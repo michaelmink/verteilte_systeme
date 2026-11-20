@@ -24,14 +24,20 @@ async def send_join(sock, players, friend, CLOCK):
     sock.sendto(join, friend)
 
     try:
-        raw, addr = await asyncio.wait_for(loop.sock_recvfrom(sock, 65535), timeout=2)
+        while True:
+            raw, addr = await asyncio.wait_for(loop.sock_recvfrom(sock, 65535), timeout=2)
+            answer = json.loads(raw.decode("utf-8"))
+            if addr == friend and answer["type"] in ("JOIN_ACK", "JOIN_REJECT"):
+                break
     except asyncio.TimeoutError:
         print("Friend antwortet nicht.")
-        return
+        return False
 
     answer = json.loads(raw.decode("utf-8"))
     if answer["type"] == "JOIN_REJECT":
         print(f"Join abgelehnt: {answer['reason']}")
-        return
+        return False
     
     handle_join_ack(addr, answer, players, CLOCK)
+
+    return True

@@ -56,6 +56,7 @@ def register():
         trail=[],        # Startposition wird nach dem Join gewählt
         move_no=0,
         out=False,
+        last_move=None
     )
     return me, friend
 

@@ -21,7 +21,7 @@ def join_ack_msg(clock, players):
     }
 
 # Eintrag in JOIN_ACK.players
-def player_entry(ip, port, nickname, color, trail, move_no, out):
+def player_entry(ip, port, nickname, color, trail, move_no, out, last_move):
     return {
         "ip": ip,
         "port": port,
@@ -29,7 +29,8 @@ def player_entry(ip, port, nickname, color, trail, move_no, out):
         "color": color,
         "trail": trail,      # [[x0, y0], [x1, y1], ...], trail[0] = Startposition
         "move_no": move_no,
-        "out": out
+        "out": out,
+        "last_move": last_move,
     }
 
 # Friend Peer -> neuer Peer

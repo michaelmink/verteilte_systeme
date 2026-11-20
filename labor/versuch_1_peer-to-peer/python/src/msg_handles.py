@@ -1,39 +1,35 @@
 
 import json
+import time
+
 from .msg_templates import join_reject_msg, join_ack_msg, player_entry
+from . import state
 
 
-def handle_eliminated(addr, peer_msg, players, CLOCK):
+def handle_eliminated(addr, peer_msg):
     """
     if received then set for this player out to True in players list
     """
     print(f"ELIMINATED received from {addr} with reason {peer_msg["reason"]}")
     addr_key = f"{addr[0]}_{addr[1]}"
-    players[addr_key]["out"] = True
+    if addr_key in players:
+        players[addr_key]["out"] = True
+        players[addr_key]["out_at"] = time.time()
+    else:
+        print(f"ELIMINATED received from unknown: {addr}")
 
 
-def handle_move(addr, peer_msg, players, CLOCK):
-    """
-    update player entry in players with updated move
-    """
-    print(f"MOVE received from {addr}")
-
-    my_addr_key = f"{players["me"]["ip"]}_{players["me"]["port"]}"
-    addr_key = f"{addr[0]}_{addr[1]}"
-    for player in players:
-        if addr_key in players:
-            players[addr_key]["trail"] = peer_msg["trail"]
-            players[addr_key]["direction"] = peer_msg["direction"]
-            players[addr_key]["move_no"] = peer_msg["move_no"]
-        elif addr_key == my_addr_key:
-            players["me"]["trail"] = peer_msg["trail"]
-            players["me"]["direction"] = peer_msg["direction"]
-            players["me"]["move_no"] = peer_msg["move_no"]
-        else:
-            print(f"Warning: {addr_key} not registered.")
+def handle_move(addr, peer_msg):
+    key = f"{addr[0]}_{addr[1]}"
+    p = players.get(key)
+    if p is None or p["out"] or peer_msg["move_no"] <= p["move_no"]:
+        return
+    p["trail"] = peer_msg["trail"]
+    p["move_no"] = peer_msg["move_no"]
+    p["last_move"] = time.time()
 
 
-def handle_announce(addr, peer_msg, players, CLOCK):
+def handle_announce(addr, peer_msg):
     """
     if new player send announce message then he is ack'ed and can be added to each players list
     """
@@ -53,13 +49,14 @@ def handle_announce(addr, peer_msg, players, CLOCK):
         color=peer_msg["color"],
         trail=peer_msg["pos"],
         move_no=0,
-        out=False
+        out=False,
+        last_move=time.time()
     )
 
     print(f"New peer {addr} added successfully.")
 
 
-def handle_join_ack(addr, peer_msg, players, CLOCK):
+def handle_join_ack(addr, peer_msg):
     """
     der Fragende empfängt ack Nachricht mit den Parameters snakes und peers
     beim Empfang des ACK wird der Spieler in die 
@@ -78,6 +75,10 @@ def handle_join_ack(addr, peer_msg, players, CLOCK):
             continue
         else:
             players[player_addr] = players_rec[player_addr]
+    
+    # set timestamp according to my local clock
+    for key, p in players.items():
+        p["last_move"] = time.time()
 
 
 def handle_join_reject(addr, peer_msg):
@@ -87,7 +88,7 @@ def handle_join_reject(addr, peer_msg):
     print("Try again.")
 
 
-def handle_join(sock, addr, peer_msg, players, CLOCK):
+def handle_join(sock, addr, peer_msg):
     """
     receives join message with nickname, color
     checks if nickname and color are allowed
@@ -99,12 +100,12 @@ def handle_join(sock, addr, peer_msg, players, CLOCK):
     print(f"JOIN received from {addr}")
     
     reject_reason = ""
-    if players["me"]["nickname"] == peer_msg["nickname"]:
-        reject_reason = "nickname already exists."
-    if players["me"]["color"] == peer_msg["color"]:
-        reject_reason = "color already exists."
-    if len(players) == 4:
-        reject_reason = "Max players reached."
+    if any(p["nickname"] == peer_msg["nickname"] for p in players.values()):
+        reject_reason = "NICKNAME_TAKEN"
+    elif any(p["color"] == peer_msg["color"] for p in players.values()):
+        reject_reason = "COLOR_TAKEN"
+    elif len(players) >= 4:
+        reject_reason = "GAME_FULL"
 
     CLOCK += 1
 
