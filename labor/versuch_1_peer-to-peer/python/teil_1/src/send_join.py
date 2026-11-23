@@ -4,9 +4,10 @@ import asyncio
 
 from .msg_templates import join_msg
 from .msg_handles import handle_join_ack
+from . import state
 
 
-async def send_join(sock, players, friend, CLOCK):
+async def send_join(sock, friend):
     """
     join game contains sending a join message to the friend
     receiving a join_ack with snakes and peers from friend
@@ -18,8 +19,7 @@ async def send_join(sock, players, friend, CLOCK):
     print(f"Send JOIN to {friend}")
     loop = asyncio.get_running_loop()
 
-    CLOCK += 1
-    join = join_msg(CLOCK, players["me"]["nickname"], players["me"]["color"])
+    join = join_msg(state.tick(), state.players["me"]["nickname"], state.players["me"]["color"])
     join = json.dumps(join).encode("utf-8")
     sock.sendto(join, friend)
 
@@ -33,11 +33,10 @@ async def send_join(sock, players, friend, CLOCK):
         print("Friend antwortet nicht.")
         return False
 
-    answer = json.loads(raw.decode("utf-8"))
     if answer["type"] == "JOIN_REJECT":
         print(f"Join abgelehnt: {answer['reason']}")
         return False
     
-    handle_join_ack(addr, answer, players, CLOCK)
+    handle_join_ack(addr, answer)
 
     return True

@@ -42,13 +42,13 @@ def join_reject_msg(clock, reason):
     }
 
 # neuer Peer -> alle
-def announce_msg(clock, nickname, color, pos):
+def announce_msg(clock, nickname, color, trail):
     return {
         "type": "ANNOUNCE",
         "clock": clock,
         "nickname": nickname,
         "color": color,
-        "pos": pos
+        "trail": trail
     }
 
 # Peer -> alle

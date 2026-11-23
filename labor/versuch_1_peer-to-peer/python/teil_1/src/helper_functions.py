@@ -8,22 +8,28 @@ from .config import PEERS, GRID_SIZE, MAX_TIME
 from .viz import viz
 
 
+def game_over():
+    alive = [p for p in state.players.values() if not p["out"]]
+    return len(state.players) >= 2 and len(alive) <= 1
+
+
 async def inactivity_check():
     while True:
         await asyncio.sleep(0.2)
-        now = time.time()
-        for p in state.players.values():
-            if not p["out"] and now - p["last_move"] > MAX_TIME:
-                p["out"] = True
-                p["out_at"] = now
+        if len(state.players) >= 2 and not game_over():
+            now = time.time()
+            for p in state.players.values():
+                if not p["out"] and now - p["last_move"] > MAX_TIME:
+                    p["out"] = True
+                    p["out_at"] = now
         viz(state.players, GRID_SIZE)
 
 
 def get_start_position():
     m = GRID_SIZE // 2
     starts = [(m, GRID_SIZE - 1), (m, 0), (0, m), (GRID_SIZE - 1, m)]   # oben, unten, links, rechts
-    taken = {tuple(p["trail"][0]) for p in state.players.values() if p["trail"]}
-    return random.choice([s for s in starts if s not in taken])
+    taken = {tuple(c) for p in state.players.values() for c in p["trail"]}
+    state.players["me"]["trail"] =  [random.choice([s for s in starts if s not in taken])]
 
 
 def check_collision(pos):

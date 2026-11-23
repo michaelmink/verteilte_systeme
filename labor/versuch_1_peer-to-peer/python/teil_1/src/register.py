@@ -2,12 +2,7 @@
 from .msg_templates import player_entry
 
 
-PEERS = [
-    ("127.0.0.1", 5000),
-    ("127.0.0.1", 5001),
-    ("127.0.0.1", 5002),
-    ("127.0.0.1", 5003),
-]
+from .config import PEERS
 
 IP_RANGE = [p[1] for p in PEERS]
 my_ip = "127.0.0.1"

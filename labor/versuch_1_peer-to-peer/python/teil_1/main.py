@@ -7,16 +7,16 @@ import sys
 import tty
 import termios
 import time
-import random
+
 
 from src.register import register
-from src.msg_templates import move_msg, join_msg, join_reject_msg, join_ack_msg, player_entry, announce_msg, eliminated_msg
-from src.msg_handles import handle_join, handle_join_ack, handle_join_reject, handle_announce, handle_move, handle_eliminated
+from src.msg_templates import move_msg, announce_msg, eliminated_msg
+from src.msg_handles import handle_join, handle_join_ack, handle_announce, handle_move, handle_eliminated
 from src.send_join import send_join
 from src.viz import viz
-from src.helper_functions import send_to_all, check_collision, get_start_position, inactivity_check
+from src.helper_functions import send_to_all, check_collision, get_start_position, inactivity_check, game_over
 from src import state
-from src.config import PEERS, GRID_SIZE, MAX_TIME
+from src.config import GRID_SIZE, DEBUG
 
 
     
@@ -29,7 +29,7 @@ async def on_key(sock):
         user_input = os.read(fd, 10).decode(errors="ignore")
 
         # check if player is still in the game
-        if state.players["me"]["out"]:
+        if state.players["me"]["out"] or game_over():
             return
 
         # input validation
@@ -60,17 +60,17 @@ async def on_key(sock):
             new_pos = (trail[-1][0]+1, trail[-1][1])
 
         # check for collision
-        reason = check_collision(new_pos, state.players)
+        reason = check_collision(new_pos)
 
         if reason:
             state.players["me"]["out"] = True
             state.players["me"]["out_at"] = time.time()
-            send_to_all(sock, eliminated_msg(tick(), reason, state.players["me"]["move_no"]))
+            send_to_all(sock, eliminated_msg(state.tick(), reason, state.players["me"]["move_no"]))
         else:
             state.players["me"]["trail"].append(new_pos)
             state.players["me"]["move_no"] += 1
             state.players["me"]["last_move"] = time.time()
-            move = move_msg(tick(), players["me"]["trail"], direction, state.players["me"]["move_no"])
+            move = move_msg(state.tick(), state.players["me"]["trail"], direction, state.players["me"]["move_no"])
             send_to_all(sock, move)
 
     loop = asyncio.get_running_loop()
@@ -81,19 +81,20 @@ async def on_key(sock):
 
 async def receiver_loop(sock):
     """
-    game tick
+    receiver loop
     """
     loop = asyncio.get_running_loop()
     while(True):
         # recvfrom
         msg, addr = await loop.sock_recvfrom(sock, 65535)
         peer_msg = json.loads(msg.decode("utf-8"))
+        state.on_receive(peer_msg["clock"])
 
         msg_type = peer_msg["type"]
         if msg_type == "JOIN":
-            handle_join(sock, addr)
+            handle_join(sock, addr, peer_msg)
         elif msg_type == "ANNOUNCE":
-            handle_announce(addr)
+            handle_announce(addr, peer_msg)
         elif msg_type == "MOVE":
             handle_move(addr, peer_msg)
         elif msg_type == "ELIMINATED":
@@ -114,22 +115,22 @@ async def main():
     # Register
     me, friend = register()
     state.players["me"] = me
-
+    
     # Create UDP Socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setblocking(False)
     
     # Bind Socket
-    print(f"Bind Addr: {(me["ip"], me["port"])}")
-    sock.bind((me["ip"], me["port"]))
+    sock.bind(("0.0.0.0", me["port"]))
 
     # 2. JOIN
     # debug
-    if me["port"] == 5002:
-        friend = ("127.0.0.1", 5000) 
+    if DEBUG:
+        if me["port"] == 5002:
+            friend = ("127.0.0.1", 5000)
 
     if friend:
-        if not await send_join(sock, players, friend, tick()):
+        if not await send_join(sock, friend):
             return
 
     # 3. Startposition wählen
@@ -137,7 +138,9 @@ async def main():
     state.players["me"]["last_move"] = time.time()
 
     # 4. send ANNOUNCE
-    send_to_all(sock, announce_msg(state.players["me"]["nickname"], state.players["me"]["color"], state.players["me"]["trail"]))
+    send_to_all(sock, announce_msg(
+        state.tick(), state.players["me"]["nickname"], state.players["me"]["color"], state.players["me"]["trail"])
+        )
 
     # 4. Jetzt erst Tasten annehmen  
     # allow for continous inputs with pressing Enter all the time
@@ -149,7 +152,7 @@ async def main():
         await asyncio.gather(
             receiver_loop(sock),
             on_key(sock),
-            inactivity_check(sock),
+            inactivity_check(),
         )
     finally:
         sys.stdout.write("\x1b[?25h\x1b[?1049l")
