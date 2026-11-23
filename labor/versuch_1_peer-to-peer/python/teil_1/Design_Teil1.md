@@ -57,7 +57,7 @@ Jede Nachricht enthält die Felder `type` (Nachrichtentyp) und `clock` (Lamport-
   } }
 ```
 
-**JOIN_REJECT** – `reason` ∈ `NICKNAME_TAKEN`, `COLOR_TAKEN`, `GAME_FULL`
+**JOIN_REJECT** – `reason` ∈ `NICKNAME_TAKEN`, `COLOR_TAKEN`, `GAME_FULL`, `GAME_OVER`
 ```json
 { "type": "JOIN_REJECT", "clock": 5, "reason": "COLOR_TAKEN" }
 ```
@@ -88,6 +88,7 @@ sequenceDiagram
     U->>A: Nickname, Farbe, Port, Join = leer
     Note over A: kein Friend → neues Spiel<br/>players = {A}, freie Randmitte wählen
     A--)P: ANNOUNCE (niemand online → keine Wirkung)
+    Note over A: allein: keine Inaktivitätsprüfung
 ```
 
 ### b) Beitritt erfolgreich (Eingabe: Join = IP:Port von A)
@@ -99,12 +100,12 @@ sequenceDiagram
     participant C as Peer C
     U->>B: Nickname, Farbe, Port, Join = A
     B->>A: JOIN(nickname, color)
-    Note over A: prüft Nickname, Farbe, Anzahl<br/>(nimmt B noch NICHT auf)
+    Note over A: prüft Nickname, Farbe, Anzahl, Spielende<br/>(nimmt B noch NICHT auf)
     A-->>B: JOIN_ACK(players inkl. Spuren)
     Note over B: übernimmt Zustand,<br/>wählt freie Randmitte
     B->>A: ANNOUNCE(nickname, color, trail)
     B->>C: ANNOUNCE(nickname, color, trail)
-    Note over A,C: B wird in players aufgenommen
+    Note over A,C: B wird in players aufgenommen,<br/>Inaktivitätsuhr aller Spieler neu gestartet
 ```
 
 ### c) Beitritt abgelehnt
@@ -176,12 +177,15 @@ sequenceDiagram
 | Regel | Beschreibung |
 |---|---|
 | Aufnahme | Ein Spieler wird erst beim `ANNOUNCE` aufgenommen, nicht beim `JOIN`. Ein wiederholtes `JOIN` ist daher harmlos. |
+| Prüfung beim `JOIN` | In dieser Reihenfolge: Nickname vergeben → `NICKNAME_TAKEN`; Farbe vergeben → `COLOR_TAKEN`; bereits 4 Spieler → `GAME_FULL`; Spiel beendet → `GAME_OVER`. |
+| Startposition | Zufällig eine freie Randmitte (oben, unten, links, rechts). Sind alle belegt, ein beliebiges freies Randfeld. Frei = von keiner Spur belegt. |
 | Unbekannte Absender | `MOVE`/`ELIMINATED` von unbekannten Adressen werden ignoriert. |
 | Duplikate, Reihenfolge | `MOVE` wird nur übernommen, wenn `move_no` größer als der bekannte Stand ist. Da `MOVE` die komplette Spur enthält, gleicht das nächste `MOVE` ein verlorenes aus. |
 | Ausgeschiedene | Nachrichten eines ausgeschiedenen Spielers ändern seinen Zustand nicht mehr. Seine Spur bleibt als Wand bestehen. |
-| Inaktivität | Spieler mit `now − last_move > T` gelten als ausgeschieden. Das deckt auch abgestürzte Peers und verlorene `ELIMINATED` ab. |
-| Spielende | Mindestens 2 Spieler beteiligt und höchstens 1 aktiv. Danach keine Züge und keine Inaktivitätsprüfung mehr. |
-| Rangfolge | Aktive Spieler vorne, danach Ausgeschiedene absteigend nach `out_at`. |
+| Inaktivität | Spieler mit `now − last_move > T` gelten als ausgeschieden. Das deckt auch abgestürzte Peers und verlorene `ELIMINATED` ab. Geprüft wird erst ab 2 Spielern und nur bis zum Spielende. |
+| Neustart der Inaktivitätsuhr | Bei jedem Beitritt (`ANNOUNCE` bzw. `JOIN_ACK`) wird `last_move` **aller** Spieler auf die aktuelle Zeit gesetzt. So scheidet ein bisher allein spielender Peer nicht sofort aus, wenn ein zweiter beitritt. |
+| Spielende | Mindestens 2 Spieler beteiligt und höchstens 1 aktiv. Danach keine Züge, keine Inaktivitätsprüfung und keine Beitritte mehr. |
+| Rangfolge | Aktive Spieler vorne, danach Ausgeschiedene absteigend nach `out_at`. Scheiden die letzten Spieler gleichzeitig aus, ist das Spiel unentschieden. |
 
 ## 6. Lamport-Uhr
 
@@ -196,3 +200,4 @@ Die Uhr wird mitgeführt, aber **nicht ausgewertet**, da gleichzeitige Eingaben 
 - Ein verlorenes `JOIN` oder `JOIN_ACK` wird nicht wiederholt. Nach dem Timeout bricht der Join ab und muss neu gestartet werden.
 - Starten zwei Peers gleichzeitig ohne Friend, entstehen zwei getrennte Spiele (Split Brain).
 - Inaktivität und Rangfolge beruhen auf lokalen Zeitpunkten und können sich zwischen Peers geringfügig unterscheiden.
+- Nach Spielende ist kein Beitritt mehr möglich. Für eine neue Runde starten alle Peers neu.

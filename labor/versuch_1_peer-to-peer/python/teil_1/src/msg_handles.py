@@ -4,6 +4,7 @@ import time
 
 from .msg_templates import join_reject_msg, join_ack_msg, player_entry
 from . import state
+from .helper_functions import game_over
 
 
 def handle_eliminated(addr, peer_msg):
@@ -40,6 +41,10 @@ def handle_announce(addr, peer_msg):
             print(f"player {addr} already in my state.players list.")
             return
 
+    now = time.time()
+    # reset last_move to avoid inactive check to be positive when new player enters
+    for k, v in state.players.items():
+        v["last_move"] = now
     # add announced player
     addr_key = f"{addr[0]}_{addr[1]}"
     state.players[addr_key] = player_entry(

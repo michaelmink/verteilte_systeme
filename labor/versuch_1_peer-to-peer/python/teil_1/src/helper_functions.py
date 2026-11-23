@@ -27,9 +27,13 @@ async def inactivity_check():
 
 def get_start_position():
     m = GRID_SIZE // 2
-    starts = [(m, GRID_SIZE - 1), (m, 0), (0, m), (GRID_SIZE - 1, m)]   # oben, unten, links, rechts
+    mids = [(m, GRID_SIZE - 1), (m, 0), (0, m), (GRID_SIZE - 1, m)]
+    edge = [(x, y) for x in range(GRID_SIZE) for y in range(GRID_SIZE)
+            if x in (0, GRID_SIZE - 1) or y in (0, GRID_SIZE - 1)]
     taken = {tuple(c) for p in state.players.values() for c in p["trail"]}
-    state.players["me"]["trail"] =  [random.choice([s for s in starts if s not in taken])]
+    candidates = [s for s in mids if s not in taken] or [s for s in edge if s not in taken]
+    state.players["me"]["trail"] = [random.choice(candidates)]
+    
 
 
 def check_collision(pos):
