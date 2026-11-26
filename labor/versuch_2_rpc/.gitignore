@@ -1,0 +1,22 @@
+# Gradle
+.gradle/
+build/
+.kotlin/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse / VS Code
+bin/
+.classpath
+.project
+.settings/
+.vscode/
+
+# OS
+.DS_Store

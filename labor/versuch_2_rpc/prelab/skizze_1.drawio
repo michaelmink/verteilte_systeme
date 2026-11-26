@@ -1,0 +1,125 @@
+<mxfile host="65bd71144e">
+    <diagram id="ITs2xtqC2ThrFSC7Qew5" name="Page-1">
+        <mxGraphModel dx="1003" dy="596" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="cI_Eb9Ky5VVHypCd_rY2-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="grpc Proto File&lt;div&gt;myService.proto&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="60" width="120" x="500" y="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-29" edge="1" parent="1" source="cI_Eb9Ky5VVHypCd_rY2-3" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="CjGEsDk_YRVqYCijoN4m-8">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-32" connectable="0" parent="CjGEsDk_YRVqYCijoN4m-29" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;" value="extends" vertex="1">
+                    <mxGeometry relative="1" x="-0.7292" y="-1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="cI_Eb9Ky5VVHypCd_rY2-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;dashed=1" value="MyServiceGrpc.java&lt;div&gt;- Stub (nicht genutzt)&lt;/div&gt;&lt;div&gt;- ImplBase = Skeleton&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="60" width="132.5" x="735.5" y="281" as="geometry"/>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-28" edge="1" parent="1" source="cI_Eb9Ky5VVHypCd_rY2-4" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="CjGEsDk_YRVqYCijoN4m-8">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="cI_Eb9Ky5VVHypCd_rY2-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;dashed=1" value="&lt;div&gt;Message Classes&lt;/div&gt;Getter/Builder" vertex="1">
+                    <mxGeometry height="60" width="120" x="598" y="281" as="geometry"/>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-3" edge="1" parent="1" source="CjGEsDk_YRVqYCijoN4m-20" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="cI_Eb9Ky5VVHypCd_rY2-4" value="">
+                    <mxGeometry height="50" relative="1" width="50" as="geometry">
+                        <mxPoint x="538" y="340" as="sourcePoint"/>
+                        <mxPoint x="358" y="430" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-4" edge="1" parent="1" source="CjGEsDk_YRVqYCijoN4m-20" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="cI_Eb9Ky5VVHypCd_rY2-3" value="">
+                    <mxGeometry height="50" relative="1" width="50" as="geometry">
+                        <mxPoint x="558" y="330" as="sourcePoint"/>
+                        <mxPoint x="378" y="420" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-38" edge="1" parent="1" source="CjGEsDk_YRVqYCijoN4m-7" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="CjGEsDk_YRVqYCijoN4m-13">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;myClient.py&lt;/span&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgba(121, 121, 121, 0.4) rgb(30, 30, 30);&quot;&gt;channel, stub.MyFunc()&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="60" width="240" x="166" y="408" as="geometry"/>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-8" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="myServer.java&lt;div&gt;class MyServiceImpl extends ImplBase&lt;/div&gt;&lt;div&gt;main(): ServerBuilder&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="60" width="240" x="695.5" y="408" as="geometry"/>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-15" edge="1" parent="1" source="cI_Eb9Ky5VVHypCd_rY2-1" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="CjGEsDk_YRVqYCijoN4m-1" value="">
+                    <mxGeometry height="50" relative="1" width="50" as="geometry">
+                        <mxPoint x="560" y="110" as="sourcePoint"/>
+                        <mxPoint x="690" y="320" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-1" parent="1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;" value="protoc --python_out&lt;div&gt;+ grpc_python_out&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="60" width="175" x="286" y="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-26" edge="1" parent="1" source="CjGEsDk_YRVqYCijoN4m-19" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="CjGEsDk_YRVqYCijoN4m-7">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="279.75" y="341" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-31" connectable="0" parent="CjGEsDk_YRVqYCijoN4m-26" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;" value="import" vertex="1">
+                    <mxGeometry relative="1" x="-0.6437" y="-2" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-27" edge="1" parent="1" source="CjGEsDk_YRVqYCijoN4m-18" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" target="CjGEsDk_YRVqYCijoN4m-7">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-30" connectable="0" parent="CjGEsDk_YRVqYCijoN4m-27" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;" value="import" vertex="1">
+                    <mxGeometry relative="1" x="-0.1057" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-18" parent="1" style="rounded=0;whiteSpace=wrap;html=1;dashed=1" value="&lt;div&gt;myService_pb2.py&lt;/div&gt;&lt;div&gt;(Message Classes)&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="60" width="120" x="406" y="281" as="geometry"/>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-19" parent="1" style="rounded=0;whiteSpace=wrap;html=1;dashed=1" value="myService_pb2_grpc.py&lt;div&gt;- Client Stub&lt;/div&gt;&lt;div&gt;- Servicer/Skeleton&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="60" width="155" x="241" y="281" as="geometry"/>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-20" parent="1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;" value="protoc + protoc-gen-grpc-java" vertex="1">
+                    <mxGeometry height="60" width="175" x="585.5" y="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-22" edge="1" parent="1" style="endArrow=classic;html=1;" target="CjGEsDk_YRVqYCijoN4m-18" value="">
+                    <mxGeometry height="50" relative="1" width="50" as="geometry">
+                        <mxPoint x="366" y="230" as="sourcePoint"/>
+                        <mxPoint x="506" y="330" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-23" edge="1" parent="1" source="CjGEsDk_YRVqYCijoN4m-1" style="endArrow=classic;html=1;exitX=0.463;exitY=0.984;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="CjGEsDk_YRVqYCijoN4m-19" value="">
+                    <mxGeometry height="50" relative="1" width="50" as="geometry">
+                        <mxPoint x="376" y="240" as="sourcePoint"/>
+                        <mxPoint x="279.75" y="320" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-24" edge="1" parent="1" source="cI_Eb9Ky5VVHypCd_rY2-1" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="CjGEsDk_YRVqYCijoN4m-20" value="">
+                    <mxGeometry height="50" relative="1" width="50" as="geometry">
+                        <mxPoint x="570" y="120" as="sourcePoint"/>
+                        <mxPoint x="288" y="180" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-13" parent="1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;" value="&lt;div&gt;grpcio + protobuf&lt;/div&gt;&lt;div&gt;(Laufzeitbibliothek)&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="60" width="175" x="231" y="488" as="geometry"/>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-35" edge="1" parent="1" source="CjGEsDk_YRVqYCijoN4m-13" style="endArrow=classic;startArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="CjGEsDk_YRVqYCijoN4m-37" value="">
+                    <mxGeometry height="50" relative="1" width="50" as="geometry">
+                        <mxPoint x="470" y="408" as="sourcePoint"/>
+                        <mxPoint x="520" y="358" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-36" connectable="0" parent="CjGEsDk_YRVqYCijoN4m-35" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=1;" value="HTTP/2/TCP&lt;div&gt;Protobuf Nachrichten&lt;/div&gt;" vertex="1">
+                    <mxGeometry relative="1" x="0.2142" as="geometry">
+                        <mxPoint x="-28" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-37" parent="1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;" value="grpc-java + protobuf-java&lt;div&gt;(Laufzeitbibliothek)&lt;/div&gt;" vertex="1">
+                    <mxGeometry height="60" width="175" x="695.5" y="488" as="geometry"/>
+                </mxCell>
+                <mxCell id="CjGEsDk_YRVqYCijoN4m-39" edge="1" parent="1" source="CjGEsDk_YRVqYCijoN4m-8" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.443;entryY=0.033;entryDx=0;entryDy=0;entryPerimeter=0;" target="CjGEsDk_YRVqYCijoN4m-37">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
