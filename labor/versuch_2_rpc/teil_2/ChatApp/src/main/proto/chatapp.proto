@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "chat.app";
+option java_outer_classname = "ChatAppProto";
+option objc_class_prefix = "CHA";
+
+package chatapp;
+
+import "google/protobuf/empty.proto";
+
+
+// ======== Message Definition ================
+enum EventType {
+  UNDEFINED = 0;
+  LEAVE = 1;
+  JOIN = 2;
+}
+
+message RegisterAnswer {
+  oneof result {
+    int32 client_id = 1;
+    string error_msg = 2;
+  }
+}
+
+message Client {
+  string nickname = 1;
+  int32 zahl = 2;
+}
+
+message AllClients {
+  repeated Client clients = 1;
+}
+
+message ChatMsg {
+  string nickname = 1;
+  oneof content {
+    string text = 2;
+    EventType event = 3;
+  }
+}
+
+message ChatMsgHistory {
+  repeated ChatMsg chat_history = 1;
+}
+
+message RequestHistory {
+  int32 count = 1;
+}
+
+// ======== Service Definition ================
+service ChatApp {
+  // Client wants to register at Server
+  rpc Register_Client (Client) returns (RegisterAnswer);
+  // Client wants to get a list of all Clients from Server
+  rpc Get_All_Clients (google.protobuf.Empty) returns (AllClients);
+  // bidirectional stream Client <-> Server
+  rpc Send_Message (stream ChatMsg) returns (stream ChatMsg);
+  // Request Chat History
+  rpc Request_History (RequestHistory) returns (ChatMsgHistory);
+}
+
+service HistoryService {
+  // backup message
+  rpc Backup_Message (stream ChatMsg) returns (google.protobuf.Empty);
+  // send history
+  rpc Request_History (RequestHistory) returns (ChatMsgHistory);
+}
