@@ -5,7 +5,7 @@ plugins {
 
 group = "org.example"
 version = "1.0.0"
-java.sourceCompatibility = JavaVersion.VERSION_24
+java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenCentral()
@@ -55,5 +55,13 @@ sourceSets {
         java {
             srcDirs("build/generated/source/proto/main/java", "build/generated/source/proto/main/grpc")
         }
+    }
+}
+
+tasks.register("cp") {
+    doLast {
+        file("cp.txt").writeText(
+            (sourceSets["main"].runtimeClasspath).asPath
+        )
     }
 }
